@@ -1,4 +1,6 @@
-"""FastAPI server to redirect firewall log messages to ChatGPT for troubleshooting."""
+"""
+FastAPI server to redirect firewall log messages to ChatGPT for troubleshooting.
+"""
 
 # standard library
 import os
@@ -18,21 +20,26 @@ import openai
 
 app = FastAPI()
 
+# Set the OpenAI API key and engine
 openai.api_key = os.environ.get("OPENAI_TOKEN")
 openai_engine = "gpt-3.5-turbo"
 
+# Create a Slack app instance
 slack_app = AsyncApp(token=os.environ.get("SLACK_APP_TOKEN"))
 
+# Create a Slack request handler
 handler = SlackRequestHandler(slack_app)
 
 
 @app.on_event("startup")
 async def startup_event():
+    """Event handler that runs when the app starts up."""
     app.openapi_schema = None
 
 
 @app.get("/openapi.json", include_in_schema=False)
 async def get_openapi_schema():
+    """Endpoint that returns the OpenAPI schema for the app."""
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
@@ -47,6 +54,20 @@ async def get_openapi_schema():
 
 @app.post("/pangpt/decryption/")
 async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
+    """
+    Endpoint that receives a JSON-formatted log message from a Palo Alto Networks firewall and sends it to ChatGPT
+    for troubleshooting. The response from ChatGPT is sent to a Slack channel as a structured Slack message.
+
+    Args:
+        body (Dict[str, str]): The JSON-formatted log message from the firewall.
+
+    Raises:
+        HTTPException: Raised if there is an error while processing the request.
+
+    Returns:
+        int: The HTTP status code for the response (200 for success).
+    """
+    # Define the request prompt for ChatGPT
     request = """
     I want you to role play as a bot that specializes within the network and cybersecurity industry, specifically with Palo Alto Networks PAN-OS firewalls.
     You will be fed a JSON formatted log message from the firewall and will be tasked with troubleshooting the decryption log below.
@@ -55,6 +76,7 @@ async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
     The response needs to be structured in Slack Block format as it will be sent to the user as a Slack message.
     """
     try:
+        # Send the log message to ChatGPT for troubleshooting
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -65,12 +87,14 @@ async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
         message = response.choices[0]["message"]
         print(message)
         msg = message.to_dict_recursive()
+        # Format the response as a structured Slack message
         blocks = [
             {
                 "type": "section",
                 "text": {"type": "mrkdwn", "text": msg["content"]},
             }
         ]
+        # Post the response to the Slack channel using the Slack app
         await slack_app.client.chat_postMessage(
             channel=os.environ.get("SLACK_CHANNEL"),
             blocks=blocks,
@@ -87,6 +111,20 @@ async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
 
 @app.post("/pangpt/globalprotect/")
 async def globalprotect_message_receiver(body: Dict[str, str] = Body(...)):
+    """
+    Endpoint that receives a JSON-formatted log message from a Palo Alto Networks firewall and sends it to ChatGPT
+    for troubleshooting. The response from ChatGPT is sent to a Slack channel as a structured Slack message.
+
+    Args:
+        body (Dict[str, str]): The JSON-formatted log message from the firewall.
+
+    Raises:
+        HTTPException: Raised if there is an error while processing the request.
+
+    Returns:
+        int: The HTTP status code for the response (200 for success).
+    """
+    # Define the request prompt for ChatGPT
     request = """
     I want you to role play as a bot that specializes within the network and cybersecurity industry, specifically with Palo Alto Networks PAN-OS firewalls.
     You will be fed a JSON formatted log message from the firewall and will be tasked with troubleshooting the Global Protect log below.
@@ -95,6 +133,7 @@ async def globalprotect_message_receiver(body: Dict[str, str] = Body(...)):
     The response needs to be structured in Slack Block format as it will be sent to the user as a Slack message.
     """
     try:
+        # Send the log message to ChatGPT for troubleshooting
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -105,12 +144,14 @@ async def globalprotect_message_receiver(body: Dict[str, str] = Body(...)):
         message = response.choices[0]["message"]
         print(message)
         msg = message.to_dict_recursive()
+        # Format the response as a structured Slack message
         blocks = [
             {
                 "type": "section",
                 "text": {"type": "mrkdwn", "text": msg["content"]},
             }
         ]
+        # Post the response to the Slack channel using the Slack app
         await slack_app.client.chat_postMessage(
             channel=os.environ.get("SLACK_CHANNEL"),
             blocks=blocks,
