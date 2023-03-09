@@ -3,9 +3,9 @@ FROM python:3-alpine
 # ---------------------------------------------------------------------------
 # Metadata
 # ---------------------------------------------------------------------------
-LABEL name="ghcr.io/cdot65/pan-os-docker"
+LABEL name="ghcr.io/cdot65/pangpt"
 LABEL maintainer="cremsburg.dev@gmail.com"
-LABEL description="Alpine based Python container for Palo Alto Networks SDK."
+LABEL description="FastAPI server to redirect logs to ChatGPT for troubleshooting."
 LABEL license="Apache 2.0"
 LABEL url="https://github.com/cdot65/pangpt"
 LABEL build-date="20230306"
