@@ -38,7 +38,7 @@ def build(context, arm=None):
         )
     else:
         context.run(
-            f"docker build -t {DOCKER_IMG}:{VERSION} docker/intel",
+            f"docker build -t {DOCKER_IMG}:{VERSION} --build-arg OPENAI_TOKEN --build-arg SLACK_APP_TOKEN --build-arg SLACK_BOT_TOKEN --build-arg SLACK_CHANNEL docker/intel",
         )
 
 
