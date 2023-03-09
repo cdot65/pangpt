@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "pangpt"
+version = "0.1.0"
+description = "Send errors from PAN-OS to ChatGPT for debugging"
+authors = ["Calvin Remsburg <cremsburg.dev@gmail.com>"]
+license = "Apache2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.93.0"
+rich = "^13.3.2"
+openai = "^0.27.1"
+uvicorn = "^0.20.0"
+slack-bolt = "^1.16.3"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+black = "^23.1.0"
+ipython = "^8.11.0"
+invoke = "^2.0.0"
+ipdb = "^0.13.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
