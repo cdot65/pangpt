@@ -1,4 +1,4 @@
-# Project Name: FastAPI-PAN-OS-ChatGPT
+# FastAPI-PAN-OS-ChatGPT
 
 This project is an implementation of a FastAPI application that receives firewall log messages from a Palo Alto Networks PAN-OS device, parses the messages, and sends the interesting information to OpenAI's GPT-3.5-turbo chatbot for troubleshooting. The chatbot's response is posted in a Slack channel. The project uses FastAPI for handling the HTTP requests, Slack API for posting messages to the Slack channel, and OpenAI API for interacting with the GPT-3.5-turbo chatbot.
 
