@@ -71,9 +71,19 @@ async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
     request = """
     I want you to role play as a bot that specializes within the network and cybersecurity industry, specifically with Palo Alto Networks PAN-OS firewalls.
     You will be fed a JSON formatted log message from the firewall and will be tasked with troubleshooting the decryption log below.
-    Your response will be detailed troubleshooting information. Include affected users, affected devices, and any other information that would be helpful to the user.
-    Your response will not reference yourself, will be without pronouns, and will be written in the third person as a Slack message.
-    The response needs to be structured in Slack Block format as it will be sent to the user as a Slack message.
+    Your response will be use the Jinja2 template below, but will also include a short sentence recommendation on next steps.
+    Do not include an explanation, just return the result of the Jinja2 template and the recommendation.
+
+    - name: {{ name }}
+      sni: {{ sni }}
+      commonname: {{ commonname }}
+      root: {{ root }}
+      rootstatus: {{ rootstatus }}
+      details: {{ details }}
+      sourceip: {{ sourceip }}
+      sourceuser: {{ sourceuser }}
+      destinationip: {{ destinationip }}
+      application: {{ application }}
     """
     try:
         # Send the log message to ChatGPT for troubleshooting
@@ -85,19 +95,22 @@ async def decryption_message_receiver(body: Dict[str, str] = Body(...)):
             ],
         )
         message = response.choices[0]["message"]
-        print(message)
         msg = message.to_dict_recursive()
         # Format the response as a structured Slack message
         blocks = [
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": msg["content"]},
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "```\n" + str(msg["content"]) + "\n```",
+                },
             }
         ]
         # Post the response to the Slack channel using the Slack app
         await slack_app.client.chat_postMessage(
             channel=os.environ.get("SLACK_CHANNEL"),
             blocks=blocks,
+            text="Here's the message content:",
             token=os.environ.get("SLACK_BOT_TOKEN"),
         )
         return status.HTTP_200_OK
